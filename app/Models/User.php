@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,37 @@ class User extends Authenticatable
                 DB::table('ingresos')->where('user_id', $user->id)->delete();
             });
         });
+    }
+
+    /**
+     * Movimientos del usuario. Partir de estas relaciones garantiza el filtro
+     * por usuario autenticado sin repetir el where en cada consulta:
+     *
+     *     $request->user()->egresos()->delMes(2026, 8)->sum('monto');
+     */
+    public function ingresos(): HasMany
+    {
+        return $this->hasMany(Ingreso::class);
+    }
+
+    public function egresos(): HasMany
+    {
+        return $this->hasMany(Egreso::class);
+    }
+
+    /**
+     * Solo las categorias propias. Para incluir el catalogo del sistema
+     * (user_id null) hay que usar Categoria::visiblesPara($user->id): una
+     * relacion hasMany no puede alcanzar filas sin dueño.
+     */
+    public function categorias(): HasMany
+    {
+        return $this->hasMany(Categoria::class);
+    }
+
+    public function subcategorias(): HasMany
+    {
+        return $this->hasMany(Subcategoria::class);
     }
 
     /**
