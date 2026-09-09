@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EgresoController;
+use App\Http\Controllers\Api\IngresoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,5 +30,17 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/resumen', [DashboardController::class, 'resumen']);
+        Route::get('/egresos-por-categoria', [DashboardController::class, 'egresosPorCategoria']);
+        Route::get('/resumen-anual', [DashboardController::class, 'resumenAnual']);
+    });
+
+    // Sin show: el catalogo completo viene en el index y no hay pantalla que
+    // muestre una categoria sola.
+    Route::apiResource('categorias', CategoriaController::class)
+        ->except(['show']);
+
+    Route::apiResource('ingresos', IngresoController::class);
     Route::apiResource('egresos', EgresoController::class);
 });
